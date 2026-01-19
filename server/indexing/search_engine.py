@@ -89,29 +89,51 @@ async def search(query: SearchQuery) -> Tuple[List[Dict[str, Any]], int]:
     
     filters["sort"] = query.sort
     
-    # Calculate pagination
-    skip = (query.page - 1) * query.limit
-    
-    # Execute search
-    results, total = await search_publications(
-        query=query.q,
-        filters=filters,
-        skip=skip,
-        limit=query.limit
-    )
-
-    # Attach a cosine similarity score for client-side inspection
-    if query.q:
-        for doc in results:
-            try:
-                doc["cosine_similarity"] = _calculate_cosine_similarity(query.q, doc)
-            except Exception as e:
-                logger.warning(f"Failed to compute cosine similarity for doc {doc.get('_id')}: {e}")
-                doc["cosine_similarity"] = 0.0
-    else:
+    # If no query, return all matching documents with pagination
+    if not (query.q or "").strip():
+        skip = (query.page - 1) * query.limit
+        results, total = await search_publications(
+            query=query.q,
+            filters=filters,
+            skip=skip,
+            limit=query.limit
+        )
         for doc in results:
             doc["cosine_similarity"] = 0.0
-    
+        logger.info(f"Found {total} results")
+        return results, total
+
+    page = max(1, int(query.page))
+    limit = max(1, int(query.limit))
+    fetch_size = min(max(page * limit * 10, limit * 10), 5000)
+
+    # Fetch candidate documents
+    candidates, _ = await search_publications(
+        query=query.q,
+        filters=filters,
+        skip=0,
+        limit=fetch_size
+    )
+
+    scored: List[Dict[str, Any]] = []
+    for doc in candidates:
+        try:
+            score = _calculate_cosine_similarity(query.q, doc)
+        except Exception as e:
+            logger.warning(f"Failed to compute cosine similarity for doc {doc.get('_id')}: {e}")
+            score = 0.0
+        if score > 0.0:
+            doc["cosine_similarity"] = score
+            scored.append(doc)
+
+    # Sort by cosine similarity
+    scored.sort(key=lambda d: float(d.get("cosine_similarity") or 0.0), reverse=True)
+
+    total = len(scored)
+    start = (page - 1) * limit
+    end = start + limit
+    results = scored[start:end]
+
     logger.info(f"Found {total} results")
     return results, total
 

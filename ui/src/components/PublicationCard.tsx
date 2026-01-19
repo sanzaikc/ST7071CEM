@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { PublicationAuthor, PublicationResponse } from "../types/api";
 
 function formatAuthors(authors: PublicationAuthor[] | undefined): string {
@@ -7,6 +8,43 @@ function formatAuthors(authors: PublicationAuthor[] | undefined): string {
   if (authorNames.length === 1) return authorNames[0]!;
   if (authorNames.length === 2) return authorNames.join(" and ");
   return `${authorNames[0]} et al.`;
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function queryTerms(query: string): string[] {
+  return Array.from(
+    new Set(
+      query
+        .split(/[\s,.;:()'"!?/\\[\]{}<>]+/g)
+        .map((t) => t.trim())
+        .filter(Boolean),
+    ),
+  )
+    .sort((a, b) => b.length - a.length)
+    .slice(0, 20);
+}
+
+function highlightText(text: string, query: string): ReactNode {
+  const terms = queryTerms(query);
+  if (!text || terms.length === 0) return text;
+
+  const pattern = terms.map(escapeRegExp).join("|");
+  if (!pattern) return text;
+
+  const regex = new RegExp(`(${pattern})`, "gi");
+  const parts = text.split(regex);
+  if (parts.length <= 1) return text;
+
+  return parts.map((part, index) => {
+    if (part === "") return null;
+    const isMatch = regex.test(part);
+    regex.lastIndex = 0;
+    if (!isMatch) return <span key={index}>{part}</span>;
+    return <mark key={index}>{part}</mark>;
+  });
 }
 
 function getTypeColor(type: PublicationResponse["publication_type"]) {
@@ -22,9 +60,11 @@ function getTypeColor(type: PublicationResponse["publication_type"]) {
 export default function PublicationCard({
   publication,
   rank,
+  highlightQuery,
 }: {
   publication: PublicationResponse;
   rank: number;
+  highlightQuery?: string;
 }) {
   const {
     title,
@@ -47,11 +87,18 @@ export default function PublicationCard({
 
         <div className="flex-1 min-w-0">
           <h3 className="text-xl font-semibold text-primary-900 mb-2 hover:text-primary-600 cursor-pointer line-clamp-2">
-            {title || "Untitled"}
+            {title
+              ? highlightQuery
+                ? highlightText(title, highlightQuery)
+                : title
+              : "Untitled"}
           </h3>
 
           <p className="text-sm text-gray-600 mb-2">
-            {formatAuthors(authors)} - {year || "N/A"}
+            {highlightQuery
+              ? highlightText(formatAuthors(authors), highlightQuery)
+              : formatAuthors(authors)}{" "}
+            - {year || "N/A"}
           </p>
 
           {publication_type && (
@@ -63,7 +110,9 @@ export default function PublicationCard({
           )}
 
           {abstract && (
-            <p className="text-gray-700 text-sm line-clamp-3 mb-3">{abstract}</p>
+            <p className="text-gray-700 text-sm line-clamp-3 mb-3">
+              {highlightQuery ? highlightText(abstract, highlightQuery) : abstract}
+            </p>
           )}
 
           <div className="flex items-center justify-between">
@@ -91,4 +140,3 @@ export default function PublicationCard({
     </div>
   );
 }
-

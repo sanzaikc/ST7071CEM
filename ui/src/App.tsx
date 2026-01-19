@@ -177,6 +177,7 @@ function App() {
                 key={publication._id || index}
                 publication={publication}
                 rank={index + 1}
+                highlightQuery={searchQuery}
               />
             ))}
           </div>
