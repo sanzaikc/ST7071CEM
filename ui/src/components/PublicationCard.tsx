@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+
 import type { PublicationAuthor, PublicationResponse } from "../types/api";
 
 function formatAuthors(authors: PublicationAuthor[] | undefined): string {
@@ -111,7 +112,9 @@ export default function PublicationCard({
 
           {abstract && (
             <p className="text-gray-700 text-sm line-clamp-3 mb-3">
-              {highlightQuery ? highlightText(abstract, highlightQuery) : abstract}
+              {highlightQuery
+                ? highlightText(abstract, highlightQuery)
+                : abstract}
             </p>
           )}
 

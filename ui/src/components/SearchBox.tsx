@@ -29,10 +29,11 @@ export default function SearchBox({
             className="w-full px-5 py-4 text-lg border border-gray-300 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent pr-14"
             disabled={loading}
           />
+
           <button
             type="submit"
             disabled={loading || !query.trim()}
-            className="absolute right-2 p-3 text-white bg-primary-600 rounded-full hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+            className="absolute right-2 p-3 bg-primary-600 rounded-full hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? (
               <svg
@@ -73,7 +74,7 @@ export default function SearchBox({
         </div>
       </form>
 
-      <div className="mt-4 flex flex-wrap gap-2 justify-center">
+      <div className="mt-4 flex items-center flex-wrap gap-2 justify-center">
         <span className="text-sm text-gray-600">Try:</span>
         {[
           "machine learning",
