@@ -4,36 +4,109 @@ A vertical search engine specialized in retrieving papers and books published by
 
 ## Features
 
+### Backend (FastAPI + MongoDB)
+
 - **Polite Web Crawling**: Respects robots.txt and implements rate limiting
 - **MongoDB Storage**: Persistent storage for publications and authors
-- **Full-Text Search**: Search across titles, abstracts, and keywords
+- **Full-Text Search**: TF-IDF based search with cosine similarity ranking
 - **Advanced Filtering**: Filter by year, author, and publication type
 - **Scheduled Crawling**: Automatic updates on configurable schedule
 - **RESTful API**: Complete API for search and data access
 - **Background Tasks**: Non-blocking crawl operations
 
+### Frontend (React + Vite + Tailwind CSS)
+
+- **Modern UI**: Google Scholar-inspired search interface
+- **Responsive Design**: Works on desktop and mobile devices
+- **Real-time Search**: Instant results with relevance ranking
+- **Publication Statistics**: View database metrics
+- **Fast Performance**: Vite for lightning-fast development
+
 ## Architecture
 
 ```
-server/
-├── crawler/          # Web crawling components
-├── database/         # MongoDB connection and repositories
-├── indexing/         # Search engine logic
-├── models/           # Data models and schemas
-├── utils/            # Logging and utilities
-└── main.py          # FastAPI application
+Search Engine/
+├── server/              # Backend (FastAPI)
+│   ├── crawler/         # Web crawling components
+│   ├── database/        # MongoDB connection and repositories
+│   ├── indexing/        # Search engine logic
+│   ├── models/          # Data models and schemas
+│   ├── utils/           # Logging and utilities
+│   └── main.py          # FastAPI application
+└── ui/                  # Frontend (React)
+    ├── src/
+    │   ├── components/  # React components
+    │   ├── services/    # API integration
+    │   └── App.jsx      # Main application
+    └── package.json
 ```
 
-## Setup
+## Quick Start
 
-### 1. Install Dependencies
+### Prerequisites
+
+- Python 3.9+
+- Node.js 18+
+- MongoDB 6.0+
+
+### Option 1: Start Everything (Windows)
+
+```bash
+start-all.bat
+```
+
+### Option 2: Start Everything (Linux/Mac)
+
+```bash
+./start-all.sh
+```
+
+### Option 3: Manual Start
+
+**1. Start MongoDB**
+
+```bash
+mongod --dbpath C:\data\db  # Windows
+mongod --dbpath /data/db    # Linux/Mac
+```
+
+**2. Start Backend**
+
+```bash
+cd server
+python -m venv .venv
+source .venv/Scripts/activate  # Windows
+source .venv/bin/activate      # Linux/Mac
+pip install -r requirements.txt
+fastapi dev main.py
+```
+
+**3. Start Frontend**
+
+```bash
+cd ui
+npm install
+npm run dev
+```
+
+**4. Access the Application**
+
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+
+## Setup Details
+
+### Backend Setup
+
+1. **Install Dependencies**
 
 ```bash
 cd server
 pip install -r requirements.txt
 ```
 
-### 2. Install and Start MongoDB
+2. **Install and Start MongoDB**
 
 Download and install MongoDB from https://www.mongodb.com/try/download/community
 
@@ -47,7 +120,7 @@ mongod --dbpath C:\data\db
 mongod --dbpath /data/db
 ```
 
-### 3. Configure Environment
+3. **Configure Environment**
 
 Edit `.env` file in the project root:
 
