@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import React from "react";
 
 export default function SearchBox({
   onSearch,
@@ -7,14 +7,12 @@ export default function SearchBox({
   onSearch: (query: string) => void;
   loading: boolean;
 }) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = React.useState("");
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = query.trim();
-    if (trimmed) {
-      onSearch(trimmed);
-    }
+    if (trimmed) onSearch(trimmed);
   };
 
   return (
