@@ -100,6 +100,13 @@ class CrawlJobStats(BaseModel):
     updated_publications: int = 0
     errors: int = 0
 
+class ClusterRequest(BaseModel):
+    text: str
+
+class ClusterResponse(BaseModel):
+    category: str
+    cluster_id: Optional[int] = None
+
 class CrawlJobCreate(BaseModel):
     crawl_type: CrawlType = CrawlType.FULL
     

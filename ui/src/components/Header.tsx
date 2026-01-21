@@ -81,8 +81,19 @@ export default function Header() {
               Crawl
             </Link>
             <Link
+              to="/classification"
+              className={`text-sm font-medium transition-colors ${
+                isActive("/classification")
+                  ? "text-blue-600"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Classification
+            </Link>
+            <Link
               to="/about"
               className={`text-sm font-medium transition-colors ${
+
                 isActive("/about")
                   ? "text-blue-600"
                   : "text-gray-600 hover:text-gray-900"

@@ -4,6 +4,7 @@ import Footer from "./components/Footer";
 import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import CrawlPage from "./pages/CrawlPage";
+import ClassificationPage from "./pages/ClassificationPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/crawl" element={<CrawlPage />} />
+        <Route path="/classification" element={<ClassificationPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
 
@@ -22,5 +24,6 @@ function App() {
     </div>
   );
 }
+
 
 export default App;

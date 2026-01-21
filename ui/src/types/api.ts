@@ -86,3 +86,12 @@ export interface CrawlEvent {
   counters?: Record<string, number>;
   data?: Record<string, unknown>;
 }
+
+export interface ClusterRequest {
+  text: string;
+}
+
+export interface ClusterResponse {
+  category: string;
+  cluster_id?: number | null;
+}

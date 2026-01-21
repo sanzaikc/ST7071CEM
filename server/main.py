@@ -28,9 +28,10 @@ from indexing.search_engine import (
 from models.schemas import (
     SearchQuery, SearchResponse, PublicationResponse,
     AuthorResponse, CrawlJobCreate, CrawlJobResponse,
-    StatsResponse, PublicationType
+    StatsResponse, PublicationType, ClusterRequest, ClusterResponse
 )
 from utils.logger import setup_logger
+from clustering.model import cluster_service
 
 logger = setup_logger(__name__)
 
@@ -40,9 +41,19 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting application...")
     await connect_to_mongo()
+
+    # Initialize clustering model
+    logger.info("Training clustering model...")
+    try:
+        cluster_service.train()
+        logger.info("Clustering model trained.")
+    except Exception as e:
+        logger.error(f"Failed to train clustering model: {e}")
+
     start_scheduler()
     yield
     # Shutdown
+
     logger.info("Shutting down application...")
     stop_scheduler()
     await close_mongo_connection()
@@ -75,6 +86,7 @@ async def root():
             "publications": "/api/publications",
             "authors": "/api/authors",
             "crawl": "/api/crawl/trigger",
+            "predict": "/api/predict",
             "docs": "/docs"
         }
     }
@@ -86,8 +98,17 @@ async def health_check():
     """Health check endpoint"""
     return {
         "status": "healthy",
-        "database": "connected"
+        "database": "connected",
+        "clustering": "trained" if cluster_service.is_trained else "not trained"
     }
+
+
+# Clustering endpoint
+@app.post("/api/predict", response_model=ClusterResponse)
+async def predict_category(request: ClusterRequest):
+    """Predict the category of the given text"""
+    category = cluster_service.predict(request.text)
+    return ClusterResponse(category=category)
 
 
 # Crawl endpoints
