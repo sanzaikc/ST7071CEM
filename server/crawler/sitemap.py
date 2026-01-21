@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 from typing import List, Dict, Optional
 from urllib.parse import urljoin
 from utils.logger import setup_logger
+from crawler.config import settings
 
 logger = setup_logger(__name__)
 
@@ -86,7 +87,11 @@ def parse_sitemap(sitemap_url: str, timeout: int = 30) -> List[Dict[str, any]]:
     logger.info(f"Parsing sitemap: {sitemap_url}")
     
     try:
-        response = requests.get(sitemap_url, timeout=timeout)
+        response = requests.get(
+            sitemap_url,
+            timeout=timeout,
+            headers={"User-Agent": settings.user_agent},
+        )
         response.raise_for_status()
         
         # Check if it's a sitemap index or regular sitemap

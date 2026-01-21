@@ -66,25 +66,24 @@ def robots_allows(
     robots_parser_cache: Dict[str, RobotFileParser]
 ) -> bool:
     """Check if robots.txt allows crawling the target URL with caching"""
-    robots_url, robots_content = fetch_robots_txt(
-        target_url,
-        timeout_s=timeout_s,
-        user_agent=user_agent,
-        max_bytes=max_bytes
-    )
-    
-    # Check cache first
+    robots_url = robots_txt_url(target_url)
+
     if robots_url in robots_parser_cache:
         parser = robots_parser_cache[robots_url]
         return parser.can_fetch(user_agent.split()[0] or "*", target_url)
-    
-    # If robots.txt not available, allow
+
+    _, robots_content = fetch_robots_txt(
+        target_url,
+        timeout_s=timeout_s,
+        user_agent=user_agent,
+        max_bytes=max_bytes,
+    )
+
     if not robots_content:
         return True
-    
-    # Build and cache parser
+
     parser = build_robot_parser(robots_url, robots_content)
     robots_parser_cache[robots_url] = parser
-    
+
     return parser.can_fetch(user_agent.split()[0] or "*", target_url)
 

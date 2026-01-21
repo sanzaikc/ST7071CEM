@@ -73,3 +73,16 @@ export interface CrawlJobResponse {
   stats: CrawlJobStats;
   error_log: string[];
 }
+
+export type CrawlEventLevel = "info" | "warn" | "error";
+
+export interface CrawlEvent {
+  job_id: string;
+  ts: IsoDateTimeString;
+  level: CrawlEventLevel;
+  stage: string;
+  message: string;
+  url?: string;
+  counters?: Record<string, number>;
+  data?: Record<string, unknown>;
+}

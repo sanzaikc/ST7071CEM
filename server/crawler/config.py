@@ -12,8 +12,8 @@ class Settings(BaseSettings):
     crawl_timeout: int = 30
     max_retries: int = 3
     respect_robots_txt: bool = False
-    user_agent: str = "CU-Research-SearchBot/1.0"
-    target_url: str = "https://pureportal.coventry.ac.uk/en/organisations/ics-research-centre-for-computational-science-and-mathematical-mo"
+    user_agent: str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    target_url: str = "https://pureportal.coventry.ac.uk/en/organisations/ics-research-centre-for-computational-science-and-mathematical-mo/publications/"
     
     # Scheduler
     crawl_schedule_enabled: bool = True

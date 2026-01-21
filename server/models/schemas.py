@@ -101,7 +101,7 @@ class CrawlJobStats(BaseModel):
     errors: int = 0
 
 class CrawlJobCreate(BaseModel):
-    crawl_type: CrawlType
+    crawl_type: CrawlType = CrawlType.FULL
     
 class CrawlJobResponse(BaseModel):
     id: str = Field(alias="_id")

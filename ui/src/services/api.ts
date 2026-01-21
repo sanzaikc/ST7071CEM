@@ -1,7 +1,6 @@
 import type {
   SearchResponse,
   StatsResponse,
-  CrawlJobCreate,
   CrawlJobResponse,
 } from "../types/api";
 
@@ -34,15 +33,9 @@ export async function getStatistics(): Promise<StatsResponse> {
   return (await response.json()) as StatsResponse;
 }
 
-export async function triggerCrawl(
-  crawlData: CrawlJobCreate,
-): Promise<CrawlJobResponse> {
+export async function triggerCrawl(): Promise<CrawlJobResponse> {
   const response = await fetch(`${API_BASE_URL}/crawl/trigger`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(crawlData),
   });
 
   if (!response.ok) {

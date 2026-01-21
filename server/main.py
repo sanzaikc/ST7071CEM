@@ -1,7 +1,8 @@
 import asyncio
 import uuid
 from typing import List, Optional
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Query
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Query, WebSocket
+from starlette.websockets import WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
@@ -13,6 +14,7 @@ from database.repositories import (
     get_last_successful_crawl
 )
 from crawler.pureportal import run_full_crawl
+from crawler.events import hub
 from crawler.scheduler import start_scheduler, stop_scheduler
 from indexing.search_engine import (
     search,
@@ -91,16 +93,17 @@ async def health_check():
 # Crawl endpoints
 @app.post("/api/crawl/trigger", response_model=CrawlJobResponse)
 async def trigger_crawl(
-    crawl_job: CrawlJobCreate,
-    background_tasks: BackgroundTasks
+    background_tasks: BackgroundTasks,
+    crawl_job: Optional[CrawlJobCreate] = None
 ):
     """Trigger on-demand crawl"""
-    logger.info(f"Triggering {crawl_job.crawl_type} crawl...")
+    crawl_type = crawl_job.crawl_type if crawl_job else "full"
+    logger.info(f"Triggering {crawl_type} crawl...")
     
     job_id = str(uuid.uuid4())
     
     # Create job record
-    await create_crawl_job(job_id, crawl_job.crawl_type)
+    await create_crawl_job(job_id, crawl_type)
     
     # Run crawl in background
     background_tasks.add_task(run_full_crawl, job_id)
@@ -259,3 +262,16 @@ async def get_stats():
         publications_by_type=stats["publications_by_type"],
         last_crawl=last_crawl
     )
+
+
+@app.websocket("/ws/crawl/{job_id}")
+async def crawl_events_ws(websocket: WebSocket, job_id: str):
+    await websocket.accept()
+    await hub.subscribe(job_id, websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        pass
+    finally:
+        await hub.unsubscribe(job_id, websocket)
