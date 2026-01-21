@@ -48,3 +48,28 @@ export interface StatsResponse {
   last_crawl?: IsoDateTimeString | null;
 }
 
+export type CrawlType = "full" | "incremental" | "on_demand";
+export type CrawlStatus = "pending" | "running" | "completed" | "failed";
+
+export interface CrawlJobStats {
+  authors_crawled: number;
+  publications_found: number;
+  new_publications: number;
+  updated_publications: number;
+  errors: number;
+}
+
+export interface CrawlJobCreate {
+  crawl_type: CrawlType;
+}
+
+export interface CrawlJobResponse {
+  _id: string;
+  job_id: string;
+  status: CrawlStatus;
+  crawl_type: CrawlType;
+  started_at: IsoDateTimeString;
+  completed_at?: IsoDateTimeString | null;
+  stats: CrawlJobStats;
+  error_log: string[];
+}
