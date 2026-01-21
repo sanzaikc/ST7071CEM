@@ -303,6 +303,7 @@ async def crawl_researchers(driver, robots_parser_cache: Dict, job_id: str) -> L
         job_id,
         stage="discover_researchers",
         message=f"Discovered {len(researchers)} researchers",
+        level="success",
         counters={"authors_crawled": len(researchers)},
     )
     return researchers
@@ -388,6 +389,7 @@ async def crawl_author_publications(
             job_id,
             stage="list_author_publications_done",
             message=f"Collected {len(publications)} publications for author",
+            level="success",
             counters={"publication_urls_collected": len(publications)},
             data={"author": author.get("name"), "author_pure_id": author.get("pure_id")},
         )
@@ -633,6 +635,7 @@ async def run_full_crawl(job_id: str):
             job_id,
             stage="collect_publication_urls_done",
             message=f"Collected {len(publication_urls)} unique publication URLs",
+            level="success",
             counters={**stats, "publication_urls_total": len(publication_urls)},
         )
         
@@ -680,6 +683,7 @@ async def run_full_crawl(job_id: str):
                     job_id,
                     stage="persist_publication",
                     message="Saved publication",
+                    level="success",
                     url=pub_url,
                     counters={**stats, "publications_processed": idx, "publication_urls_total": len(publication_urls)},
                     data={"pure_id": pub_details.get("pure_id"), "title": pub_details.get("title"), "is_new": is_new},
@@ -701,7 +705,7 @@ async def run_full_crawl(job_id: str):
         # Update job completion
         await update_crawl_job_status(job_id, "completed")
         await update_crawl_job_stats(job_id, stats)
-        await emit_crawl_event(job_id, stage="job_completed", message="Crawl completed", counters=stats)
+        await emit_crawl_event(job_id, stage="job_completed", message="Crawl completed", level="success", counters=stats)
         
         logger.info(f"Crawl completed. Stats: {stats}")
         

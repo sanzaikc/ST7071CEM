@@ -1,20 +1,23 @@
 import React from "react";
+import { useSearchParams } from "react-router-dom";
 import { triggerCrawl } from "../services/api";
 import CrawlEvents from "../components/CrawlEvents";
 
 function CrawlPage() {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [jobId, setJobId] = React.useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const jobId = searchParams.get("jobId");
 
   const handleStart = async () => {
     setLoading(true);
     setError(null);
     try {
       const job = await triggerCrawl();
-      setJobId(job.job_id);
+      setSearchParams({ jobId: job.job_id });
     } catch {
-      setError("Failed to start crawler. Make sure the server is running.");
+      setError("Failed to trigger crawl. Make sure the server is running.");
     } finally {
       setLoading(false);
     }
@@ -39,12 +42,6 @@ function CrawlPage() {
           <p className="text-red-800 text-sm">{error}</p>
         </div>
       )}
-
-      {jobId ? (
-        <div className="mb-4 text-sm text-gray-600">
-          Job: <span className="font-medium text-gray-900">{jobId}</span>
-        </div>
-      ) : null}
 
       <CrawlEvents jobId={jobId} />
     </main>

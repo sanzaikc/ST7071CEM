@@ -71,9 +71,16 @@ export default function CrawlEvents({ jobId }: { jobId: string | null }) {
   }, [jobId, closeWs]);
 
   const levelStyle = (level: CrawlEvent["level"]) => {
-    if (level === "error") return "text-red-700 bg-red-50 border-red-200";
-    if (level === "warn") return "text-yellow-800 bg-yellow-50 border-yellow-200";
-    return "text-gray-800 bg-gray-50 border-gray-200";
+    switch (level) {
+      case "error":
+        return "text-red-900 bg-red-50 border-red-200";
+      case "warn":
+        return "text-amber-900 bg-amber-50 border-amber-200";
+      case "success":
+        return "text-emerald-900 bg-emerald-50 border-emerald-200";
+      default:
+        return "text-slate-700 bg-slate-50 border-slate-200";
+    }
   };
 
   return (
@@ -85,7 +92,7 @@ export default function CrawlEvents({ jobId }: { jobId: string | null }) {
       )}
 
       <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
-        <div className="max-h-[600px] overflow-auto p-3 space-y-2">
+        <div className="overflow-auto p-3 space-y-2">
           {events.length ? (
             events
               .slice()
@@ -121,7 +128,9 @@ export default function CrawlEvents({ jobId }: { jobId: string | null }) {
               ))
           ) : (
             <div className="text-sm text-gray-600 py-10 text-center">
-              Start the crawler to stream events.
+              {jobId
+                ? "Connected. Waiting for events..."
+                : "Start the crawler to stream events."}
             </div>
           )}
         </div>
@@ -129,4 +138,3 @@ export default function CrawlEvents({ jobId }: { jobId: string | null }) {
     </div>
   );
 }
-

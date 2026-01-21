@@ -74,7 +74,7 @@ export interface CrawlJobResponse {
   error_log: string[];
 }
 
-export type CrawlEventLevel = "info" | "warn" | "error";
+export type CrawlEventLevel = "info" | "success" | "warn" | "error";
 
 export interface CrawlEvent {
   job_id: string;

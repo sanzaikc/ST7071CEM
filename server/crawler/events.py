@@ -15,10 +15,18 @@ class CrawlEventHub:
     def __init__(self) -> None:
         self._lock = asyncio.Lock()
         self._subscribers: dict[str, set[WebSocket]] = {}
+        self._history: dict[str, list[dict[str, Any]]] = {}
 
     async def subscribe(self, job_id: str, websocket: WebSocket) -> None:
         async with self._lock:
             self._subscribers.setdefault(job_id, set()).add(websocket)
+            # Send history to new subscriber
+            if job_id in self._history:
+                for event in self._history[job_id]:
+                    try:
+                        await websocket.send_json(event)
+                    except Exception:
+                        pass
 
     async def unsubscribe(self, job_id: str, websocket: WebSocket) -> None:
         async with self._lock:
@@ -28,9 +36,18 @@ class CrawlEventHub:
             subs.discard(websocket)
             if not subs:
                 self._subscribers.pop(job_id, None)
+                # Note: We keep history for a while so reloads work
 
     async def publish(self, job_id: str, event: dict[str, Any]) -> None:
         async with self._lock:
+            # Store in history
+            if job_id not in self._history:
+                self._history[job_id] = []
+            self._history[job_id].append(event)
+            # Keep last 500 events per job
+            if len(self._history[job_id]) > 500:
+                self._history[job_id] = self._history[job_id][-500:]
+
             subs = list(self._subscribers.get(job_id) or [])
 
         if not subs:
