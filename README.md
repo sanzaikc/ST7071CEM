@@ -207,6 +207,10 @@ curl "http://localhost:8000/api/stats"
 
 ## API Endpoints
 
+### Classification
+
+- `POST /api/predict` - Classify text into Business, Entertainment, or Health
+
 ### Crawling
 
 - `POST /api/crawl/trigger` - Trigger on-demand crawl
@@ -328,3 +332,127 @@ Logs are output to console. To save to file, modify the logger configuration in 
 ## License
 
 Educational project for STW7071CEM Information Retrieval course.
+
+---
+
+## Text Classification Module
+
+### Overview
+
+This project includes a **supervised text classification** system that categorizes documents into three predefined classes:
+
+- **Business**: Financial news, market trends, corporate reports, economic updates
+- **Entertainment**: Movies, music, celebrity news, arts, leisure activities
+- **Health**: Medical articles, wellness tips, disease information, public health
+
+### Why Classification Instead of Clustering?
+
+| Aspect             | Clustering (Unsupervised) | Classification (Supervised)  |
+| ------------------ | ------------------------- | ---------------------------- |
+| **Labels**         | Inferred from data        | Explicitly provided          |
+| **Training**       | Groups similar items      | Learns from labeled examples |
+| **Accuracy**       | Variable, depends on data | Measurable, validated        |
+| **Use Case**       | Discovery, exploration    | Prediction, assignment       |
+| **Academic Rigor** | Less interpretable        | Clear evaluation metrics     |
+
+For this assignment, **supervised classification** is preferred because:
+
+1. We have predefined categories (Business, Entertainment, Health)
+2. We need explicit, reproducible class assignments
+3. We can measure and validate model performance
+4. The workflow aligns with standard machine learning practices
+
+### Classification Workflow
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                    SUPERVISED CLASSIFICATION                      │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│  1. DATA COLLECTION                                               │
+│     └─> 150 labeled documents (50 per category)                  │
+│     └─> Sources: BBC News, Reuters, Medical journals             │
+│     └─> Each doc has: text, label, source attribution            │
+│                                                                   │
+│  2. PREPROCESSING                                                 │
+│     └─> Tokenization (split into words)                          │
+│     └─> Stop-word removal (remove "the", "is", etc.)             │
+│     └─> TF-IDF Vectorization (convert text to numbers)           │
+│                                                                   │
+│  3. MODEL TRAINING                                                │
+│     └─> Algorithm: Multinomial Naive Bayes                       │
+│     └─> Train/Validation split: 80%/20%                          │
+│     └─> Learn word-to-category associations                      │
+│                                                                   │
+│  4. INFERENCE                                                     │
+│     └─> User inputs new document                                 │
+│     └─> Vectorize with same TF-IDF model                         │
+│     └─> Predict class + confidence score                         │
+│                                                                   │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### Using the Classification API
+
+**Classify a Document:**
+
+```bash
+curl -X POST http://localhost:8000/api/predict \
+  -H "Content-Type: application/json" \
+  -d '{"text": "The stock market rallied today following positive earnings reports from tech companies."}'
+```
+
+**Response:**
+
+```json
+{
+  "label": "Business",
+  "confidence": 0.9234
+}
+```
+
+### Dataset Information
+
+The training dataset contains 150 documents:
+
+- **50 Business** documents (financial news, market reports)
+- **50 Entertainment** documents (movies, music, celebrities)
+- **50 Health** documents (medical research, wellness)
+
+Each document includes:
+
+- `text`: Full sentence or paragraph content
+- `label`: Category (Business/Entertainment/Health)
+- `source`: Attribution to original source
+
+**Note:** Documents are adapted from publicly available news sources for educational purposes. In production, include direct URLs and access dates.
+
+### Technical Implementation
+
+**Algorithm:** Multinomial Naive Bayes
+
+- Optimal for text classification with word counts
+- Based on Bayes' theorem: P(class|document) ∝ P(document|class) × P(class)
+- Fast training and prediction
+- Provides probability estimates
+
+**Vectorization:** TF-IDF (Term Frequency - Inverse Document Frequency)
+
+- Weights words by importance
+- Reduces impact of common words
+- Creates sparse numerical vectors
+
+**Files:**
+
+- `server/classification/model.py` - Classifier service
+- `server/classification/data.py` - Labeled dataset
+- `server/tests/test_classification_logic.py` - Unit tests
+
+### Running Classification Tests
+
+```bash
+cd server
+python -m tests.test_classification_logic
+```
+
+Expected output includes training accuracy, validation accuracy, and per-class feature importance.

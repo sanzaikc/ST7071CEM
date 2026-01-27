@@ -65,7 +65,7 @@ export async function getCrawlJobs(limit = 10): Promise<CrawlJobResponse[]> {
 
 export async function predictCategory(
   text: string,
-): Promise<{ category: string }> {
+): Promise<{ label: string; confidence: number }> {
   const response = await fetch(`${API_BASE_URL}/predict`, {
     method: "POST",
     headers: {
@@ -75,8 +75,8 @@ export async function predictCategory(
   });
 
   if (!response.ok) {
-    throw new Error("Failed to predict category");
+    throw new Error("Failed to classify text");
   }
 
-  return (await response.json()) as { category: string };
+  return (await response.json()) as { label: string; confidence: number };
 }

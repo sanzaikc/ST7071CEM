@@ -28,10 +28,10 @@ from indexing.search_engine import (
 from models.schemas import (
     SearchQuery, SearchResponse, PublicationResponse,
     AuthorResponse, CrawlJobCreate, CrawlJobResponse,
-    StatsResponse, PublicationType, ClusterRequest, ClusterResponse
+    StatsResponse, PublicationType, ClassificationRequest, ClassificationResponse
 )
 from utils.logger import setup_logger
-from clustering.model import cluster_service
+from classification.model import classifier_service
 
 logger = setup_logger(__name__)
 
@@ -42,13 +42,13 @@ async def lifespan(app: FastAPI):
     logger.info("Starting application...")
     await connect_to_mongo()
 
-    # Initialize clustering model
-    logger.info("Training clustering model...")
+    # Initialize classification model
+    logger.info("Training classification model...")
     try:
-        cluster_service.train()
-        logger.info("Clustering model trained.")
+        result = classifier_service.train()
+        logger.info(f"Classification model trained. Validation accuracy: {result['validation_accuracy']}")
     except Exception as e:
-        logger.error(f"Failed to train clustering model: {e}")
+        logger.error(f"Failed to train classification model: {e}")
 
     start_scheduler()
     yield
@@ -99,16 +99,20 @@ async def health_check():
     return {
         "status": "healthy",
         "database": "connected",
-        "clustering": "trained" if cluster_service.is_trained else "not trained"
+        "classifier": "trained" if classifier_service.is_trained else "not trained"
     }
 
 
-# Clustering endpoint
-@app.post("/api/predict", response_model=ClusterResponse)
-async def predict_category(request: ClusterRequest):
-    """Predict the category of the given text"""
-    category = cluster_service.predict(request.text)
-    return ClusterResponse(category=category)
+# Classification endpoint
+@app.post("/api/predict", response_model=ClassificationResponse)
+async def predict_category(request: ClassificationRequest):
+    """Classify the given text into Business, Entertainment, or Health.
+    
+    Uses a trained Multinomial Naive Bayes classifier with TF-IDF vectorization.
+    Returns the predicted label and confidence score.
+    """
+    label, confidence = classifier_service.predict(request.text)
+    return ClassificationResponse(label=label, confidence=round(confidence, 4))
 
 
 # Crawl endpoints

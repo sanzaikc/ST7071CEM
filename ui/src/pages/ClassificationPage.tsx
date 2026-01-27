@@ -1,10 +1,14 @@
-
 import React, { useState } from "react";
 import { predictCategory } from "../services/api";
 
+interface PredictionResult {
+  label: string;
+  confidence: number;
+}
+
 export default function ClassificationPage() {
   const [inputText, setInputText] = useState("");
-  const [prediction, setPrediction] = useState<string | null>(null);
+  const [prediction, setPrediction] = useState<PredictionResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,7 +22,7 @@ export default function ClassificationPage() {
 
     try {
       const result = await predictCategory(inputText);
-      setPrediction(result.category);
+      setPrediction(result);
     } catch (err) {
       setError("Failed to classify text. Please try again.");
       console.error(err);
@@ -83,10 +87,22 @@ export default function ClassificationPage() {
           {prediction && (
             <div className="mt-6 p-6 bg-green-50 rounded-xl border border-green-200 text-center">
               <h3 className="text-lg font-semibold text-green-900 mb-2">
-                Predicted Category
+                Predicted Label
               </h3>
-              <div className="text-3xl font-bold text-green-700">
-                {prediction}
+              <div className="text-3xl font-bold text-green-700 mb-3">
+                {prediction.label}
+              </div>
+              <div className="text-sm text-green-600">
+                Confidence:{" "}
+                <span className="font-semibold">
+                  {(prediction.confidence * 100).toFixed(1)}%
+                </span>
+              </div>
+              <div className="mt-3 w-full bg-green-200 rounded-full h-2">
+                <div
+                  className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${prediction.confidence * 100}%` }}
+                />
               </div>
             </div>
           )}

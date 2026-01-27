@@ -87,11 +87,11 @@ export interface CrawlEvent {
   data?: Record<string, unknown>;
 }
 
-export interface ClusterRequest {
+export interface ClassificationRequest {
   text: string;
 }
 
-export interface ClusterResponse {
-  category: string;
-  cluster_id?: number | null;
+export interface ClassificationResponse {
+  label: string;
+  confidence: number;
 }
